@@ -28,15 +28,19 @@ class StockDataProcessor:
             for filename in files:
                 df = pd.read_csv(os.path.join(path, filename))
                 df = df[self.column_name].dropna()  # Supprime les valeurs NaN
+
+                # Applique la transformation logarithmique
+                df_log = np.log1p(df.values)  # log(prices + 1)
+
                 if self.is_train:
-                    df = self.scaler.fit_transform(df.values.reshape(-1, 1)).flatten()
+                    df_log = self.scaler.fit_transform(df_log.reshape(-1, 1)).flatten()
                     with open(self.scaler_path, 'wb') as f:
                         pickle.dump(self.scaler, f)
                     #print(f"Scaler sauvegardé dans {self.scaler_path}")
                 else:
-                    df = self.scaler.transform(df.values.reshape(-1, 1)).flatten()
+                    df_log = self.scaler.transform(df_log.reshape(-1, 1)).flatten()
 
-                self.datas.append(df)
+                self.datas.append(df_log)
 
         return self.datas
 

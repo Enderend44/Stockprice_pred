@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from pretreatment import StockDataProcessor
 from model import Transformer, LSTM
 import joblib
+import numpy as np
 
 class StockPriceInference:
     def __init__(self, model, model_path='models/best_model.h5', scaler_path='models/scaler.pkl', data_folder='datas/validation_data', column_name='Open', seq_length=50, device=None):
@@ -18,6 +19,13 @@ class StockPriceInference:
 
         # Prétraitement des données
         self.data_processor = StockDataProcessor(data_folder, column_name=column_name, seq_length=seq_length, is_train=False)
+
+    def denormalize(self, normalized_data):
+        """ Dénormalisation en inversant le MinMaxScaler et en appliquant log inverse. """
+        # Dénormalisation
+        denormalized_data = self.scaler.inverse_transform(normalized_data.reshape(-1, 1))
+        # Inverse de log1p : expm1
+        return np.expm1(denormalized_data).flatten()
 
     def predict(self):
         """ Effectuer les prédictions pour les données de validation. """
@@ -36,9 +44,9 @@ class StockPriceInference:
             with torch.no_grad():
                 preds = self.model(sequences).cpu().numpy().flatten()
 
-            # Ramener les prédictions et les valeurs réelles à leur échelle d'origine
-            preds = self.scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
-            actual_values = self.scaler.inverse_transform(actual_values.reshape(-1, 1)).flatten()
+            # Dénormaliser les prédictions et les valeurs réelles
+            preds = self.denormalize(preds)
+            actual_values = self.denormalize(actual_values)
 
             # Stocker les données réelles et prédites pour chaque fichier
             predictions[filename] = (actual_values, preds)
@@ -60,7 +68,7 @@ class StockPriceInference:
 
 # Exemple d'utilisation
 if __name__ == "__main__":
-    model = Transformer(input_dim=1, seq_length=200) #LSTM(input_dim=1, hidden_dim=256, num_layers=5, seq_lenght=200)  # Peut aussi être un Transformer
+    model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=200) #Transformer(input_dim=1, seq_length=200) # Peut aussi être un Transformer
     inference = StockPriceInference(
         model, 
         model_path='models/best_model.h5', 

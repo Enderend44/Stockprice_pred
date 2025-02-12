@@ -40,7 +40,7 @@ class Transformer(nn.Module):
         return x
 
 class LSTM(nn.Module):
-    def __init__(self, input_dim=1, hidden_dim=64, num_layers=3, dropout=0.1, seq_lenght=50):
+    def __init__(self, input_dim=1, hidden_dim=128, num_layers=4, dropout=0.1, seq_lenght=100):
         super(LSTM, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers

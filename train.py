@@ -86,8 +86,8 @@ class StockPriceTrainer:
 
 def main():
     # Initialiser le modèle (Transformer ou LSTM)
-    #model = LSTM(input_dim=1, hidden_dim=256, num_layers=5, seq_lenght=200)   # Exemple avec LSTM
-    model = Transformer(input_dim=1, seq_length=200)  # Exemple avec Transformer
+    model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=200)   # Exemple avec LSTM
+    #model = Transformer(input_dim=1, seq_length=200)  # Exemple avec Transformer
 
     # Initialiser et démarrer l'entraînement
     trainer = StockPriceTrainer(model, 'datas/training_data', 'datas/test_data', batch_size=1000, seq_length=200)
