@@ -8,7 +8,7 @@ import pickle
 
 
 class StockDataProcessor:
-    def __init__(self, data_folder: str, column_name: str = 'Open', batch_size: int = 1000, seq_length: int = 50, is_train=True, scaler_path="models/scaler.pkl"):
+    def __init__(self, data_folder: str, column_name: str = 'Open', batch_size: int = 1000, seq_length: int = 50, is_train=True, scaler_path="scaler/scaler.pkl"):
         self.data_folder = data_folder
         self.column_name = column_name
         self.batch_size = batch_size
@@ -69,16 +69,23 @@ class StockDataProcessor:
         """Crée des séquences pour l'entrée du modèle Transformer."""
         sequences = []
         targets = []
+    
         for i in range(len(dataset) - self.seq_length):
             seq = dataset[i:i + self.seq_length]
             target = dataset[i + self.seq_length]  # y = x_t
             sequences.append(seq)
             targets.append(target)
-
+    
         sequences = np.array(sequences)
         targets = np.array(targets)
         sequences = np.expand_dims(sequences, axis=-1)  # Ajoute une dimension pour feature_dim
-        return sequences, targets
+    
+        # Retourne également la dernière séquence pour les prédictions itératives
+        last_sequence = dataset[-self.seq_length:]
+        last_sequence = np.expand_dims(last_sequence, axis=-1)  # Ajoute aussi feature_dim pour correspondre au modèle
+    
+        return sequences, targets, last_sequence
+
 
     def data_generator(self):
         """Générateur pour produire des batchs de données."""
@@ -91,7 +98,7 @@ class StockDataProcessor:
             if len(dataset) < self.seq_length + 1:
                 continue
 
-            sequences, targets = self.create_sequences(dataset)
+            sequences, targets, _ = self.create_sequences(dataset)
 
             start_idx = rd.randint(0, len(sequences) - self.batch_size)
             batch_x = sequences[start_idx:start_idx + self.batch_size]
