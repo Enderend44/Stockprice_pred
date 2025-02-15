@@ -30,6 +30,7 @@ class StockPriceInference:
     def predict(self):
         """ Effectuer les prédictions pour les données de validation. """
         self.data_processor.load_data()
+        self.data_processor.normalize_all_data()
         predictions = {}
 
         # Générer les données pour chaque fichier dans le dossier
@@ -68,6 +69,7 @@ class StockPriceInference:
 
 # Exemple d'utilisation
 if __name__ == "__main__":
+    # model = Transformer(seq_length=200)
     model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=200) #Transformer(input_dim=1, seq_length=200) # Peut aussi être un Transformer
     inference = StockPriceInference(
         model, 

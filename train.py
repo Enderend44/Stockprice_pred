@@ -43,10 +43,17 @@ class StockPriceTrainer:
 
     def train(self):
         """ Train the model. """
-        self.train_data.load_data()  # Charge les données d'entraînement
-        self.test_data.scaler = self.train_data.scaler  # Utiliser le même scaler pour les données de test
+        # Charger et normaliser les données d'entraînement
+        print("Chargement et normalisation des données d'entraînement...")
+        self.train_data.load_data()
+        self.train_data.normalize_all_data()  # Appliquer la normalisation sur les données d'entraînement
+    
+        # Charger et normaliser les données de test
+        print("Chargement et normalisation des données de test...")
         self.test_data.load_data()
-
+        self.test_data.scaler = self.train_data.scaler  # Utiliser le même scaler que pour l'entraînement
+        self.test_data.normalize_all_data()
+    
         for epoch in range(self.epochs):
             generator = self.train_data.data_generator()
             total_loss = 0
@@ -71,23 +78,24 @@ class StockPriceTrainer:
             # Log losses to TensorBoard
             self.writer.add_scalars("Loss", {"Train": avg_loss, "Test": test_loss}, epoch)
             
-            # Reduce learning rate if validation loss plateaus
-            self.scheduler.step(test_loss)
+            # Réduction du taux d'apprentissage si la perte de validation stagne
+            self.scheduler.step(avg_loss)
             
-            # Save the model if test loss improves
+            # Sauvegarder le modèle si la perte de test s'améliore
             if test_loss < self.best_loss:
                 self.best_loss = test_loss
                 torch.save(self.model.state_dict(), self.checkpoint_path)
                 print(f"New best model saved with test loss: {test_loss:.4f}")
         
-        # Close TensorBoard writer
+        # Fermer le writer TensorBoard
         self.writer.close()
+
 
 
 def main():
     # Initialiser le modèle (Transformer ou LSTM)
     model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=200)   # Exemple avec LSTM
-    #model = Transformer(input_dim=1, seq_length=200)  # Exemple avec Transformer
+    # model = Transformer(input_dim=1, seq_length=200)  # Exemple avec Transformer
 
     # Initialiser et démarrer l'entraînement
     trainer = StockPriceTrainer(model, 'datas/training_data', 'datas/test_data', batch_size=1000, seq_length=200)
