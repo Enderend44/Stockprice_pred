@@ -4,3 +4,4 @@ matplotlib>=3.4.3
 joblib>=1.1.0
 pandas
 scikit-learn
+yfinance
