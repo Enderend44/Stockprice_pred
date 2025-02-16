@@ -1,10 +1,12 @@
+import argparse
+import os
 import torch
-import torch.nn as nn
+from datetime import datetime
 from pretreatment import StockDataProcessor
 from model import Transformer, LSTM
+import torch.nn as nn
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
-import numpy as np
 
 
 class StockPriceTrainer:
@@ -21,7 +23,7 @@ class StockPriceTrainer:
         self.scheduler = lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5, factor=0.5, verbose=True)
         self.checkpoint_path = checkpoint_path
         self.best_loss = float('inf')
-        
+
         # TensorBoard writer
         self.writer = SummaryWriter(log_dir=log_dir)
 
@@ -34,11 +36,11 @@ class StockPriceTrainer:
             for _ in range(len(self.test_data.datas)):
                 batch_x, batch_y = next(generator)
                 batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
-                
+
                 output = self.model(batch_x)
                 loss = self.criterion(output.squeeze(), batch_y)
                 total_loss += loss.item()
-                
+
         return total_loss / len(self.test_data.datas)
 
     def train(self):
@@ -91,14 +93,43 @@ class StockPriceTrainer:
         self.writer.close()
 
 
-
 def main():
-    # Initialiser le modèle (Transformer ou LSTM)
-    # model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=200)   # Exemple avec LSTM
-    model = Transformer(input_dim=1, seq_length=200)  # Exemple avec Transformer
+    # Configuration des arguments
+    parser = argparse.ArgumentParser(description="Train a stock price prediction model.")
+    parser.add_argument("--model", type=str, required=True, choices=["transformer", "lstm"], help="Choose the model to train: 'transformer' or 'lstm'.")
+    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size for training.")
+    parser.add_argument("--seq_length", type=int, default=100, help="Sequence length for training.")
+    parser.add_argument("--epochs", type=int, default=100, help="Number of epochs to train.")
+    parser.add_argument("--lr", type=float, default=0.001, help="Learning rate.")
+    args = parser.parse_args()
+
+    # Initialiser le modèle selon l'argument
+    if args.model == "transformer":
+        model = Transformer(input_dim=1, seq_length=args.seq_length)
+        checkpoint_folder = "models/transformer/"
+    elif args.model == "lstm":
+        model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=args.seq_length)
+        checkpoint_folder = "models/lstm/"
+
+    # Créer le dossier de sauvegarde s'il n'existe pas
+    os.makedirs(checkpoint_folder, exist_ok=True)
+
+    # Générer un nom de fichier unique pour le modèle
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    checkpoint_path = os.path.join(checkpoint_folder, f"{args.model}_model_{timestamp}.h5")
 
     # Initialiser et démarrer l'entraînement
-    trainer = StockPriceTrainer(model, 'datas/training_data', 'datas/test_data', batch_size=1024, seq_length=100)
+    trainer = StockPriceTrainer(
+        model=model,
+        train_data_folder='datas/training_data',
+        test_data_folder='datas/test_data',
+        batch_size=args.batch_size,
+        seq_length=args.seq_length,
+        epochs=args.epochs,
+        lr=args.lr,
+        checkpoint_path=checkpoint_path,
+        log_dir=f"logs/{args.model}_{timestamp}"
+    )
     trainer.train()
 
 
