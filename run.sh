@@ -8,9 +8,9 @@ mkdir -p "$LOG_DIR"
 MODELS=("transformer" "lstm")
 
 # Hyperparamètres à tester
-BATCH_SIZES=(256 512 1024)
+BATCH_SIZES=(1024)
 SEQ_LENGTHS=(50 100 200)
-EPOCHS_LIST=(50 100)
+EPOCHS_LIST=(100)
 LEARNING_RATES=(0.001 0.0005 0.0001)
 
 # Boucle sur les hyperparamètres

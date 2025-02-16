@@ -1,0 +1,70 @@
+2025-02-16 22:05:19.955071: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-02-16 22:05:19.981086: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2025-02-16 22:05:19.981120: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2025-02-16 22:05:19.981907: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-02-16 22:05:19.986410: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-02-16 22:05:20.583512: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Chargement et normalisation des données d'entraînement...
+Chargement et normalisation des données de test...
+Epoch 1/50, Train Loss: 0.2514, Test Loss: 0.1816
+New best model saved with test loss: 0.1816
+Epoch 2/50, Train Loss: 0.1033, Test Loss: 0.0558
+New best model saved with test loss: 0.0558
+Epoch 3/50, Train Loss: 0.0400, Test Loss: 0.0076
+New best model saved with test loss: 0.0076
+Epoch 4/50, Train Loss: 0.0275, Test Loss: 0.0391
+Epoch 5/50, Train Loss: 0.0109, Test Loss: 0.0010
+New best model saved with test loss: 0.0010
+Epoch 6/50, Train Loss: 0.0107, Test Loss: 0.0013
+Epoch 7/50, Train Loss: 0.0096, Test Loss: 0.0047
+Epoch 8/50, Train Loss: 0.0077, Test Loss: 0.0004
+New best model saved with test loss: 0.0004
+Epoch 9/50, Train Loss: 0.0078, Test Loss: 0.0005
+Epoch 10/50, Train Loss: 0.0077, Test Loss: 0.0003
+New best model saved with test loss: 0.0003
+Epoch 11/50, Train Loss: 0.0069, Test Loss: 0.0001
+New best model saved with test loss: 0.0001
+Epoch 12/50, Train Loss: 0.0076, Test Loss: 0.0025
+Epoch 13/50, Train Loss: 0.0062, Test Loss: 0.0030
+Epoch 14/50, Train Loss: 0.0072, Test Loss: 0.0045
+Epoch 15/50, Train Loss: 0.0075, Test Loss: 0.0003
+Epoch 16/50, Train Loss: 0.0062, Test Loss: 0.0002
+Epoch 17/50, Train Loss: 0.0065, Test Loss: 0.0003
+Epoch 18/50, Train Loss: 0.0055, Test Loss: 0.0003
+Epoch 19/50, Train Loss: 0.0055, Test Loss: 0.0010
+Epoch 20/50, Train Loss: 0.0050, Test Loss: 0.0001
+Epoch 21/50, Train Loss: 0.0052, Test Loss: 0.0007
+Epoch 22/50, Train Loss: 0.0045, Test Loss: 0.0013
+Epoch 23/50, Train Loss: 0.0046, Test Loss: 0.0000
+New best model saved with test loss: 0.0000
+Epoch 24/50, Train Loss: 0.0046, Test Loss: 0.0003
+Epoch 25/50, Train Loss: 0.0046, Test Loss: 0.0035
+Epoch 26/50, Train Loss: 0.0046, Test Loss: 0.0009
+Epoch 27/50, Train Loss: 0.0043, Test Loss: 0.0000
+New best model saved with test loss: 0.0000
+Epoch 28/50, Train Loss: 0.0036, Test Loss: 0.0002
+Epoch 29/50, Train Loss: 0.0043, Test Loss: 0.0005
+Epoch 30/50, Train Loss: 0.0042, Test Loss: 0.0020
+Epoch 31/50, Train Loss: 0.0037, Test Loss: 0.0000
+New best model saved with test loss: 0.0000
+Epoch 32/50, Train Loss: 0.0038, Test Loss: 0.0000
+Epoch 33/50, Train Loss: 0.0035, Test Loss: 0.0004
+Epoch 34/50, Train Loss: 0.0033, Test Loss: 0.0018
+Epoch 35/50, Train Loss: 0.0034, Test Loss: 0.0001
+Epoch 36/50, Train Loss: 0.0033, Test Loss: 0.0011
+Epoch 37/50, Train Loss: 0.0032, Test Loss: 0.0005
+Epoch 38/50, Train Loss: 0.0030, Test Loss: 0.0003
+Epoch 39/50, Train Loss: 0.0033, Test Loss: 0.0007
+Epoch 40/50, Train Loss: 0.0033, Test Loss: 0.0024
+Epoch 41/50, Train Loss: 0.0032, Test Loss: 0.0006
+Epoch 42/50, Train Loss: 0.0030, Test Loss: 0.0007
+Epoch 43/50, Train Loss: 0.0033, Test Loss: 0.0007
+Epoch 44/50, Train Loss: 0.0031, Test Loss: 0.0012
+Epoch 00044: reducing learning rate of group 0 to 2.5000e-04.
+Epoch 45/50, Train Loss: 0.0028, Test Loss: 0.0001
+Epoch 46/50, Train Loss: 0.0028, Test Loss: 0.0012
+Epoch 47/50, Train Loss: 0.0032, Test Loss: 0.0006
+Epoch 48/50, Train Loss: 0.0028, Test Loss: 0.0024
+Epoch 49/50, Train Loss: 0.0025, Test Loss: 0.0006
+Epoch 50/50, Train Loss: 0.0024, Test Loss: 0.0005
