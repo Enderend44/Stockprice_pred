@@ -106,7 +106,7 @@ class StockPriceInference:
             plt.title(f'Predictions for {filename}')
             plt.xlabel("Time Steps")
             plt.ylabel("Stock Price")
-            plt.show()
+            #plt.show()
 
         return plt.gcf()
 
@@ -122,4 +122,4 @@ if __name__ == "__main__":
         data_folder='datas/validation_data'
     )
     fig = inference.plot_predictions()
-    fig.show()
+    plt.show()

@@ -8,7 +8,7 @@ import pickle
 
 
 class StockDataProcessor:
-    def __init__(self, data_folder: str, column_name: str = 'Open', batch_size: int = 1000, seq_length: int = 50, is_train=True, scaler_path="scaler/scaler.pkl"):
+    def __init__(self, data_folder:str, column_name: str = 'Open', batch_size: int = 1000, seq_length: int = 50, is_train:bool=True, scaler_path:str="scaler/scaler.pkl"):
         self.data_folder = data_folder
         self.column_name = column_name
         self.batch_size = batch_size
@@ -34,7 +34,6 @@ class StockDataProcessor:
 
                         # Applique la transformation logarithmique
                         df_log = np.log1p(df.values)  # log(prices + 1)
-
                         self.datas.append(df_log)
         except Exception as e:
             print(f"Erreur lors du chargement des données : {e}")

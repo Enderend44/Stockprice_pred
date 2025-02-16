@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class Transformer(nn.Module):
-    def __init__(self, input_dim=1, model_dim=64, num_heads=4, num_layers=3, ff_dim=128, dropout=0.1, seq_length=50):
+    def __init__(self, input_dim:int=1, model_dim:int=64, num_heads:int=4, num_layers:int=3, ff_dim:int=128, dropout:int=0.1, seq_length:int=50):
         super(Transformer, self).__init__()
         self.model_dim = model_dim
         self.seq_length = seq_length
@@ -40,7 +40,7 @@ class Transformer(nn.Module):
         return x
 
 class LSTM(nn.Module):
-    def __init__(self, input_dim=1, hidden_dim=128, num_layers=4, dropout=0.1, seq_lenght=100):
+    def __init__(self, input_dim:int=1, hidden_dim:int=128, num_layers:int=4, dropout:int=0.1, seq_lenght:int=100):
         super(LSTM, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
