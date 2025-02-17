@@ -7,6 +7,7 @@ import pandas as pd
 from model import LSTM, Transformer  # Ou Transformer si besoin
 from test import StockPriceInference  
 from pretreatment import StockDataProcessor
+from loss import *
 import torch
 
 class MainWindow:
@@ -31,7 +32,6 @@ class MainWindow:
             column_name='Open',
             seq_length=50,
         )
-
         self.setup_ui()
 
     def setup_ui(self):
@@ -63,6 +63,9 @@ class MainWindow:
         # Zone pour afficher le graphique
         self.canvas_frame = tk.Frame(self.window)
         self.canvas_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.rmse_label = tk.Label(self.window, text="", font=("Arial", 12), fg="blue")
+        self.rmse_label.pack(pady=10)
 
     def predict_stock(self):
         print("Bouton Predict cliqué.")  # Debug
@@ -114,10 +117,18 @@ class MainWindow:
 
             # Appeler la méthode plot_predictions
             print("Appel de la méthode plot_predictions...")  # Debug
-            fig = self.inference.plot_predictions(steps=self.days_to_predict.get())
+            fig, actual_values, preds = self.inference.plot_predictions(steps=self.days_to_predict.get())
             if not fig:
                 self.show_error("Failed to generate the plot.")
                 return
+            
+            rmse = LossFunctions.rmse_loss()
+            rmse_score = rmse(torch.tensor(preds),torch.tensor(actual_values))
+
+            print(f"RMSE calculée : {rmse_score}")  # Debug
+
+            # Afficher la RMSE dans l'interface
+            self.rmse_label.config(text=f"RMSE (Erreur quadratique moyenne) : {rmse_score}")
 
             # Nettoyer l'ancien canvas
             for widget in self.canvas_frame.winfo_children():

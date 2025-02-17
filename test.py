@@ -108,7 +108,7 @@ class StockPriceInference:
             plt.ylabel("Stock Price")
             #plt.show()
 
-        return plt.gcf()
+        return plt.gcf() , actual_values, preds
 
 
 # Exemple d'utilisation
@@ -121,5 +121,5 @@ if __name__ == "__main__":
         scaler_path='scaler/scaler.pkl',
         data_folder='datas/validation_data'
     )
-    fig = inference.plot_predictions()
+    fig,_,_ = inference.plot_predictions()
     plt.show()
