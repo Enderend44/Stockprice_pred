@@ -18,6 +18,26 @@ class LossFunctions:
         return nn.HuberLoss(delta=delta)
 
     @staticmethod
+    def rmse_loss():
+        """Retourne la fonction de perte RMSE (Root Mean Squared Error)."""
+        def loss_fn(output, target):
+            mse = nn.MSELoss()
+            return torch.sqrt(mse(output, target))
+        return loss_fn
+
+    @staticmethod
+    def log_cosh_loss():
+        """Retourne la fonction de perte Log-Cosh."""
+        def loss_fn(output, target):
+            return torch.mean(torch.log(torch.cosh(output - target)))
+        return loss_fn
+
+    @staticmethod
+    def smooth_l1_loss():
+        """Retourne la fonction de perte Smooth L1."""
+        return nn.SmoothL1Loss()
+
+    @staticmethod
     def custom_loss():
         """Retourne une fonction de perte personnalisée (exemple)."""
         # Implémentation d'une perte personnalisée (exemple)

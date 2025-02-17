@@ -72,6 +72,7 @@ class MainWindow:
 
         # Mise à jour des chemins et des paramètres
         self.inference.model_path = self.model_entry.get()
+        print(self.inference.model_path)
         
         if not ticker:
             self.show_error("Please enter a valid ticker.")
@@ -143,3 +144,5 @@ if __name__ == "__main__":
     print("Lancement de l'application...")  # Debug
     app = MainWindow()
     app.window.mainloop()
+
+#models/lstm/lstm_model_20250217_010334.h5

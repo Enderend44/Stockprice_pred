@@ -33,7 +33,7 @@ class StockDataProcessor:
                         df = df[self.column_name].dropna()  # Supprime les valeurs NaN
 
                         # Applique la transformation logarithmique
-                        df_log = np.log1p(df.values)  # log(prices + 1)
+                        df_log = np.log1p(df.values)  # log(prices + 1) pour eviter log(0)
                         self.datas.append(df_log)
         except Exception as e:
             print(f"Erreur lors du chargement des données : {e}")
