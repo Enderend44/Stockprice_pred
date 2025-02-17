@@ -3,6 +3,7 @@ import os
 import torch
 from datetime import datetime
 from pretreatment import StockDataProcessor
+from loss import LossFunctions
 from model import Transformer, LSTM
 import torch.nn as nn
 import torch.optim.lr_scheduler as lr_scheduler
@@ -19,6 +20,43 @@ class StockPriceTrainer:
         self.seq_length = seq_length
         self.epochs = epochs
         self.criterion = nn.MSELoss()
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr)
+        self.scheduler = lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5, factor=0.5, verbose=True)
+        self.checkpoint_path = checkpoint_path
+        self.best_loss = float('inf')
+
+        # TensorBoard writer
+        self.writer = SummaryWriter(log_dir=log_dir)
+
+    def evaluate(self):
+        """ Evaluate the model on test data. """
+        self.model.eval()
+        total_loss = 0
+        generator = self.test_data.data_generator()
+        with torch.no_grad():
+            for _ in range(len(self.test_data.datas)):
+                batch_x, batch_y = next(generator)
+                batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
+
+                output = self.model(batch_x)
+                loss = self.criterion(output.squeeze(), batch_y)
+                total_loss += loss.item()
+
+        return total_loss / len(self.test_data.datas)
+
+class StockPriceTrainer:
+    def __init__(self, model, train_data_folder, test_data_folder, batch_size=1000, seq_length=50, epochs=100, lr=0.001, checkpoint_path='models/best_model.h5', log_dir="logs", loss_function="mse_loss"):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = model.to(self.device)
+        self.train_data = StockDataProcessor(train_data_folder, batch_size=batch_size, seq_length=seq_length, is_train=True)
+        self.test_data = StockDataProcessor(test_data_folder, batch_size=batch_size, seq_length=seq_length, is_train=False)
+        self.batch_size = batch_size
+        self.seq_length = seq_length
+        self.epochs = epochs
+        
+        # Choisir la fonction de perte à partir de LossFunctions
+        loss_fn_class = LossFunctions()
+        self.criterion = getattr(loss_fn_class, loss_function)()  # Dynamique pour choisir la fonction de perte
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr)
         self.scheduler = lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5, factor=0.5, verbose=True)
         self.checkpoint_path = checkpoint_path
@@ -93,6 +131,7 @@ class StockPriceTrainer:
         self.writer.close()
 
 
+
 def main():
     # Configuration des arguments
     parser = argparse.ArgumentParser(description="Train a stock price prediction model.")
@@ -101,6 +140,7 @@ def main():
     parser.add_argument("--seq_length", type=int, default=100, help="Sequence length for training.")
     parser.add_argument("--epochs", type=int, default=100, help="Number of epochs to train.")
     parser.add_argument("--lr", type=float, default=0.001, help="Learning rate.")
+    parser.add_argument("--loss_function", type=str, default="mse_loss", choices=["mse_loss", "mae_loss", "huber_loss", "custom_loss"], help="Choose the loss function.")
     args = parser.parse_args()
 
     # Initialiser le modèle selon l'argument
@@ -128,9 +168,11 @@ def main():
         epochs=args.epochs,
         lr=args.lr,
         checkpoint_path=checkpoint_path,
-        log_dir=f"logs/{args.model}_{timestamp}"
+        log_dir=f"logs/{args.model}_{timestamp}",
+        loss_function=args.loss_function  # Passer le nom de la fonction de perte
     )
     trainer.train()
+
 
 
 if __name__ == "__main__":

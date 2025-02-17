@@ -12,6 +12,7 @@ BATCH_SIZES=(1024)
 SEQ_LENGTHS=(50 100 200)
 EPOCHS_LIST=(100)
 LEARNING_RATES=(0.001 0.0005 0.0001)
+LOSS_FUNCTIONS=("mse_loss" "mae_loss" "huber_loss" "custom_loss")
 
 # Boucle sur les hyperparamètres
 for MODEL in "${MODELS[@]}"; do
@@ -19,27 +20,31 @@ for MODEL in "${MODELS[@]}"; do
         for SEQ_LENGTH in "${SEQ_LENGTHS[@]}"; do
             for EPOCHS in "${EPOCHS_LIST[@]}"; do
                 for LR in "${LEARNING_RATES[@]}"; do
-                    # Génération d'un timestamp pour identifier chaque run
-                    TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+                    for LOSS in "${LOSS_FUNCTIONS[@]}";do
+                        # Génération d'un timestamp pour identifier chaque run
+                        TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
-                    # Log du run actuel
-                    echo "Lancement de l'entraînement :"
-                    echo "  Modèle       : $MODEL"
-                    echo "  Batch size   : $BATCH_SIZE"
-                    echo "  Sequence len : $SEQ_LENGTH"
-                    echo "  Epochs       : $EPOCHS"
-                    echo "  Learning rate: $LR"
+                        # Log du run actuel
+                        echo "Lancement de l'entraînement :"
+                        echo "  Modèle       : $MODEL"
+                        echo "  Batch size   : $BATCH_SIZE"
+                        echo "  Sequence len : $SEQ_LENGTH"
+                        echo "  Epochs       : $EPOCHS"
+                        echo "  Learning rate: $LR"
+                        echo "  Loss function: $LOSS"
 
-                    # Commande d'entraînement
-                    python3 train.py \
-                        --model $MODEL \
-                        --batch_size $BATCH_SIZE \
-                        --seq_length $SEQ_LENGTH \
-                        --epochs $EPOCHS \
-                        --lr $LR \
-                        > "$LOG_DIR/${MODEL}_${TIMESTAMP}.log" 2>&1
+                        # Commande d'entraînement
+                        python3 train.py \
+                            --model $MODEL \
+                            --batch_size $BATCH_SIZE \
+                            --seq_length $SEQ_LENGTH \
+                            --epochs $EPOCHS \
+                            --lr $LR \
+                            --loss_function $LOSS
+                            > "$LOG_DIR/${MODEL}_${TIMESTAMP}.log" 2>&1
 
-                    echo "Entraînement terminé pour ce jeu d'hyperparamètres. Les logs sont sauvegardés dans $LOG_DIR/${MODEL}_${TIMESTAMP}.log"
+                        echo "Entraînement terminé pour ce jeu d'hyperparamètres. Les logs sont sauvegardés dans $LOG_DIR/${MODEL}_${TIMESTAMP}.log"
+                    done
                 done
             done
         done

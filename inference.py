@@ -14,8 +14,10 @@ class MainWindow:
         print("Initialisation de l'interface principale...")  # Debug
         self.window = tk.Tk()
         self.window.title('Stock Price Prediction')
-        self.window.geometry('800x600')
+        self.window.geometry('800x700')
 
+        self.model_path = tk.StringVar(value='models/best_model_LSTM.h5')
+        self.days_to_predict = tk.IntVar(value=7)  # Par défaut, 7 jours
         # Charger le modèle
         print("Chargement du modèle LSTM...")  # Debug
         self.model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=50)  # Exemple pour LSTM
@@ -23,7 +25,7 @@ class MainWindow:
         print("Initialisation de la classe StockPriceInference...")  # Debug
         self.inference = StockPriceInference(
             model=self.model,
-            model_path='models/best_model_LSTM.h5',
+            model_path=self.model_path.get(),
             scaler_path='scaler/scaler.pkl',
             data_folder='datas/validation_data',
             column_name='Open',
@@ -41,6 +43,20 @@ class MainWindow:
         self.ticker_entry = tk.Entry(self.window, font=("Arial", 14), width=30)
         self.ticker_entry.pack(pady=10)
 
+        # Champ pour sélectionner le modèle
+        self.model_label = tk.Label(self.window, text="Enter model path:", font=("Arial", 14))
+        self.model_label.pack(pady=10)
+
+        self.model_entry = tk.Entry(self.window, textvariable=self.model_path, font=("Arial", 14), width=50)
+        self.model_entry.pack(pady=10)
+
+        # Champ pour le nombre de jours
+        self.days_label = tk.Label(self.window, text="Enter number of days for prediction:", font=("Arial", 14))
+        self.days_label.pack(pady=10)
+
+        self.days_entry = tk.Entry(self.window, textvariable=self.days_to_predict, font=("Arial", 14), width=10)
+        self.days_entry.pack(pady=10)
+
         self.predict_button = ttk.Button(self.window, text="Predict", command=self.predict_stock)
         self.predict_button.pack(pady=20)
 
@@ -52,7 +68,11 @@ class MainWindow:
         print("Bouton Predict cliqué.")  # Debug
         ticker = self.ticker_entry.get()
         print(f"Ticker entré : {ticker}")  # Debug
+        print(self.days_to_predict)
 
+        # Mise à jour des chemins et des paramètres
+        self.inference.model_path = self.model_entry.get()
+        
         if not ticker:
             self.show_error("Please enter a valid ticker.")
             return
@@ -88,12 +108,12 @@ class MainWindow:
 
             # Réinitialiser les poids du modèle
             print("Réinitialisation du modèle...")  # Debug
-            self.inference.model.load_state_dict(torch.load('models/best_model_LSTM.h5', map_location=self.inference.device))
+            self.inference.model.load_state_dict(torch.load(self.model_entry.get(), map_location=self.inference.device))
             self.inference.model.eval()
 
             # Appeler la méthode plot_predictions
             print("Appel de la méthode plot_predictions...")  # Debug
-            fig = self.inference.plot_predictions()
+            fig = self.inference.plot_predictions(steps=self.days_to_predict.get())
             if not fig:
                 self.show_error("Failed to generate the plot.")
                 return
@@ -110,8 +130,6 @@ class MainWindow:
         except Exception as e:
             print(f"Erreur rencontrée : {str(e)}")  # Debug
             self.show_error(f"An error occurred: {str(e)}")
-
-
 
     def show_error(self, message):
         print(f"Affichage d'une erreur : {message}")  # Debug
