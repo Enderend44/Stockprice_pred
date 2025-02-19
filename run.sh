@@ -12,7 +12,7 @@ BATCH_SIZES=(1024)
 SEQ_LENGTHS=(50 100 200)
 EPOCHS_LIST=(100)
 LEARNING_RATES=(0.001)
-LOSS_FUNCTIONS=("mse_loss" "mae_loss" "huber_loss" "custom_loss") #"rmse_loss" "log_cosh_loss" "smooth_l1_loss")
+LOSS_FUNCTIONS=("rmse_loss" "log_cosh_loss" "smooth_l1_loss") #("mse_loss" "mae_loss" "huber_loss" "custom_loss") #
 
 # Boucle sur les hyperparamètres
 for MODEL in "${MODELS[@]}"; do

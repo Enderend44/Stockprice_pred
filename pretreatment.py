@@ -28,7 +28,6 @@ class StockDataProcessor:
         try:
             for path, dirs, files in os.walk(self.data_folder):
                 for filename in files:
-                    print(filename)
                     if filename.endswith('.csv'):
                         df = pd.read_csv(os.path.join(path, filename))
                         df = df[self.column_name].dropna()  # Supprime les valeurs NaN
@@ -92,37 +91,37 @@ class StockDataProcessor:
         while True:
             if not self.datas:
                 raise ValueError("No data loaded. Please run load_data() and normalize_all_data() first.")
-    
+
             # Récupérer un dataset aléatoire
             dataset = rd.choice(self.datas)
-    
+
             if len(dataset) < self.seq_length + 1:
                 continue
-            
+
             sequences, targets, _ = self.create_sequences(dataset)
-    
+
             # Si le dataset est trop petit, on ajoute des séquences d'un autre dataset
             while len(sequences) < self.batch_size:
                 # Choisir un autre dataset aléatoire
                 additional_dataset = rd.choice(self.datas)
-                
+
                 if len(additional_dataset) < self.seq_length + 1:
                     continue
-                
+
                 additional_sequences, additional_targets, _ = self.create_sequences(additional_dataset)
-                
+
                 # Ajouter les nouvelles séquences
                 sequences = np.concatenate((sequences, additional_sequences), axis=0)
                 targets = np.concatenate((targets, additional_targets), axis=0)
-    
+
             # Assurer que le nombre de séquences est suffisant pour un batch
             if len(sequences) < self.batch_size:
                 continue
-            
+
             # Générer un batch
             start_idx = rd.randint(0, len(sequences) - self.batch_size)
             batch_x = sequences[start_idx:start_idx + self.batch_size]
             batch_y = targets[start_idx:start_idx + self.batch_size]
-    
+
             yield torch.tensor(batch_x, dtype=torch.float32), torch.tensor(batch_y, dtype=torch.float32)
 
