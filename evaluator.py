@@ -83,12 +83,13 @@ class ModelEvaluator:
 
     def extract_hyperparameters_from_filename(self, model_filename):
         """ Extraire les hyperparamètres et la fonction de perte du nom du fichier du modèle. """
-        pattern = r"_(\w+)_(\d{8}_\d{6})_batch(\d+)_seq(\d+)_epochs(\d+)_lr([\d\.]+)_(\w+)_loss"
+        # Adapter le regex pour prendre en compte un éventuel préfixe (comme "models/lstm/")
+        pattern = r"(?:.*/)?(\w+)_model_(\d{8}_\d{6})_batch(\d+)_seq(\d+)_epochs(\d+)_lr([\d\.]+)_(\w+)_loss\.h5"
         match = re.search(pattern, model_filename)
-
+    
         if match:
             return {
-                'model_type': model_filename.split('_')[0],  # 'lstm' ou 'transformer'
+                'model_type': match.group(1),  # 'lstm' ou 'transformer'
                 'date': match.group(2),
                 'batch_size': int(match.group(3)),
                 'seq_length': int(match.group(4)),
@@ -98,6 +99,7 @@ class ModelEvaluator:
             }
         else:
             raise ValueError("Nom du fichier de modèle ne correspond pas au format attendu.")
+
 
     def evaluate_all_models(self, models_folder='models', model_type='lstm'):
         """ Évaluer tous les modèles dans le dossier spécifié et retourner les scores associés. """

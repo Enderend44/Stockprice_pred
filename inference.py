@@ -7,8 +7,11 @@ import pandas as pd
 from model import LSTM, Transformer  # Ou Transformer si besoin
 from test import StockPriceInference  
 from pretreatment import StockDataProcessor
+from evaluator import ModelEvaluator
 from loss import *
 import torch
+
+
 
 class MainWindow:
     def __init__(self):
@@ -17,25 +20,21 @@ class MainWindow:
         self.window.title('Stock Price Prediction')
         self.window.geometry('800x700')
 
-        self.model_path = tk.StringVar(value='models/best_model_LSTM.h5')
+        # Variables Tkinter
+        self.model_path = tk.StringVar(value='models/lstm/lstm_model_20250219_230057_batch1024_seq50_epochs500_lr0.001_mae_loss.h5')
         self.days_to_predict = tk.IntVar(value=7)  # Par défaut, 7 jours
-        # Charger le modèle
-        print("Chargement du modèle LSTM...")  # Debug
-        self.model = LSTM(input_dim=1, hidden_dim=256, num_layers=4, seq_lenght=50)  # Exemple pour LSTM
-        
-        print("Initialisation de la classe StockPriceInference...")  # Debug
-        self.inference = StockPriceInference(
-            model=self.model,
-            model_path=self.model_path.get(),
-            scaler_path='scaler/scaler.pkl',
-            data_folder='datas/validation_data',
-            column_name='Open',
-            seq_length=50,
-        )
+
+        # Instance de ModelEvaluator pour les fonctions liées au modèle
+        self.evaluator = ModelEvaluator(scaler_path='scaler/scaler.pkl', data_folder='datas/validation_data')
+
+        # Initialise les hyperparamètres (seront extraits dynamiquement)
+        self.hyperparameters = None
+        self.model = None
         self.setup_ui()
 
     def setup_ui(self):
         print("Configuration de l'interface utilisateur...")  # Debug
+
         # Champ d'entrée pour le ticker
         self.label = tk.Label(self.window, text="Enter Yahoo Finance ticker:", font=("Arial", 14))
         self.label.pack(pady=10)
@@ -57,6 +56,7 @@ class MainWindow:
         self.days_entry = tk.Entry(self.window, textvariable=self.days_to_predict, font=("Arial", 14), width=10)
         self.days_entry.pack(pady=10)
 
+        # Bouton prédiction
         self.predict_button = ttk.Button(self.window, text="Predict", command=self.predict_stock)
         self.predict_button.pack(pady=20)
 
@@ -64,33 +64,51 @@ class MainWindow:
         self.canvas_frame = tk.Frame(self.window)
         self.canvas_frame.pack(fill=tk.BOTH, expand=True)
 
+        # Label pour afficher la RMSE
         self.rmse_label = tk.Label(self.window, text="", font=("Arial", 12), fg="blue")
         self.rmse_label.pack(pady=10)
 
     def predict_stock(self):
         print("Bouton Predict cliqué.")  # Debug
         ticker = self.ticker_entry.get()
-        print(f"Ticker entré : {ticker}")  # Debug
-        print(self.days_to_predict)
+        model_path = self.model_entry.get()
+        days_to_predict = self.days_to_predict.get()
 
-        # Mise à jour des chemins et des paramètres
-        self.inference.model_path = self.model_entry.get()
-        print(self.inference.model_path)
-        
         if not ticker:
             self.show_error("Please enter a valid ticker.")
             return
 
         try:
-            print(f"Téléchargement des données pour le ticker {ticker}...")  # Debug
-            df = yf.download(ticker, period='1y', interval='1d')
-            print(f"Données téléchargées : {len(df)} lignes.")  # Debug
+            print(f"Extraction des hyperparamètres depuis le modèle : {model_path}...")  # Debug
+            self.hyperparameters = self.evaluator.extract_hyperparameters_from_filename(model_path)
 
+            print("Chargement du modèle...")  # Debug
+            self.model = self.evaluator.load_model(
+                model_path=model_path,
+                model_type=self.hyperparameters['model_type'],
+                seq_length=self.hyperparameters['seq_length']
+            )
+
+            print(f"Modèle chargé : {self.hyperparameters['model_type']} avec longueur de séquence {self.hyperparameters['seq_length']}")  # Debug
+
+            # Initialisation de StockPriceInference avec les nouveaux paramètres
+            inference = StockPriceInference(
+                model=self.model,
+                model_path=model_path,
+                scaler_path='scaler/scaler.pkl',
+                data_folder='datas/validation_data',
+                column_name='Open',
+                seq_length=self.hyperparameters['seq_length']
+            )
+
+            # Télécharger les données du ticker
+            print(f"Téléchargement des données pour le ticker {ticker}...")  # Debug
+            df = yf.download(ticker, start="2024-01-01", end="2024-12-31")
             if df.empty:
                 self.show_error("No data found for this ticker.")
                 return
 
-            # Sauvegarder les données pour passer par le pipeline existant
+            # Sauvegarder les données dans un fichier temporaire
             data_path = "datas/inference_data/temp.csv"
             df.to_csv(data_path)
             print(f"Données sauvegardées dans {data_path}.")  # Debug
@@ -101,40 +119,31 @@ class MainWindow:
             df = df.drop([1], axis=0)  
             df.to_csv(data_path, index=False)
 
-            # Réinitialiser le Data Processor
-            print("Réinitialisation de StockDataProcessor...")  # Debug
-            self.inference.data_processor = StockDataProcessor(
+            # Réinitialiser StockDataProcessor
+            inference.data_processor = StockDataProcessor(
                 data_folder="datas/inference_data",
                 column_name="Open",
-                seq_length=50,
+                seq_length=self.hyperparameters['seq_length'],
                 is_train=False
             )
 
-            # Réinitialiser les poids du modèle
-            print("Réinitialisation du modèle...")  # Debug
-            self.inference.model.load_state_dict(torch.load(self.model_entry.get(), map_location=self.inference.device))
-            self.inference.model.eval()
+            # Générer les prédictions et afficher le graphique
+            print("Génération des prédictions...")  # Debug
+            fig, actual_values, preds = inference.plot_predictions(steps=days_to_predict)
 
-            # Appeler la méthode plot_predictions
-            print("Appel de la méthode plot_predictions...")  # Debug
-            fig, actual_values, preds = self.inference.plot_predictions(steps=self.days_to_predict.get())
-            if not fig:
-                self.show_error("Failed to generate the plot.")
-                return
-            
             rmse = LossFunctions.rmse_loss()
             rmse_score = rmse(torch.tensor(preds),torch.tensor(actual_values))
 
             print(f"RMSE calculée : {rmse_score}")  # Debug
 
-            # Afficher la RMSE dans l'interface
-            self.rmse_label.config(text=f"RMSE (Erreur quadratique moyenne) : {rmse_score}")
+            # Mettre à jour l'interface
+            self.rmse_label.config(text=f"RMSE (Erreur quadratique moyenne) : {rmse_score:.4f}")
 
-            # Nettoyer l'ancien canvas
+            # Nettoyer l'ancien graphique
             for widget in self.canvas_frame.winfo_children():
                 widget.destroy()
 
-            # Intégrer le graphique matplotlib dans Tkinter
+            # Intégrer le graphique dans l'interface Tkinter
             canvas = FigureCanvasTkAgg(fig, master=self.canvas_frame)
             canvas.draw()
             canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
@@ -155,5 +164,3 @@ if __name__ == "__main__":
     print("Lancement de l'application...")  # Debug
     app = MainWindow()
     app.window.mainloop()
-
-#models/lstm/lstm_model_20250217_010334.h5
